@@ -72,7 +72,7 @@ The project follows a **Clean Architecture (Separation of Concerns)** pattern to
 
 4. Run the application:
    ```bash
-   python app.py
+   python run.py
    ```
 
 5. Access the application:

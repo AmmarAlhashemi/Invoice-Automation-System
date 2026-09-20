@@ -50,8 +50,8 @@ The project follows a **Clean Architecture (Separation of Concerns)** pattern to
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/invoice-automation-system.git
-   cd invoice-automation-system
+   git clone https://github.com/AmmarAlhashemi/Invoice-Automation-System.git
+   cd Invoice-Automation-System
    ```
 
 2. Create and activate a virtual environment:

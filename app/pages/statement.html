@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Statement Manager</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/png">
+    <style>
+        /* Base styles, fonts, and colors */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #a7defd; 
+            padding: 20px; 
+            color: #34495e;
+            padding-top: 75px;
+        }
+
+        /* General scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 15px; 
+            height: 12px;
+        }
+
+        /* Scrollbar track background */
+        ::-webkit-scrollbar-track {
+            background: #dbf3ff;
+            border-radius: 10px;
+        }
+
+        /* Scrollbar thumb */
+        ::-webkit-scrollbar-thumb {
+            background: #1b4f72;
+            border-radius: 10px;
+            border: 2px solid #dbf3ff;
+        }
+
+        /* Scrollbar arrow buttons */
+        ::-webkit-scrollbar-button:single-button {
+            background-color: #1b4f72;
+            display: block;
+            border-radius: 3px;
+            height: 20px;
+            background-size: 8px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Up arrow */
+        ::-webkit-scrollbar-button:single-button:vertical:decrement {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23a7defd'><polygon points='50,20 80,80 20,80'/></svg>");
+        }
+
+        /* Down arrow */
+        ::-webkit-scrollbar-button:single-button:vertical:increment {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23a7defd'><polygon points='50,80 80,20 20,20'/></svg>");
+        }
+
+        /* Scrollbar button hover effect */
+        ::-webkit-scrollbar-button:hover {
+            background-color: #2980b9;
+        }
+
+        *{box-sizing: border-box;}
+
+        /* Fixed header styling */
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #1b4f72;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+        }
+
+        /* Split header into 3 equal parts */
+        .header-left, .header-right, .header-center {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Content alignment inside sections */
+        .header-left { justify-content: flex-start; }
+        .header-center { justify-content: center; }
+        .header-right { justify-content: flex-end; }
+
+        /* Navigation container styling */
+        .nav-container {
+            background: rgba(177, 226, 255, 0.746);
+            padding: 8px 15px;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+
+        /* Bell button styling */
+        #alert-history-btn {
+            background: #a7defd;
+            color: #1b4f72;
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+
+        #alert-history-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .title-text {
+            color: #a7defd;
+            font-size: 1.6rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+
+        /* Page grid layout */
+        .statement-grid {
+            display: grid;
+            grid-template-columns: 390px 1fr;
+            gap: 20px;
+        }
+        
+        /* Fieldset sections */
+        fieldset { 
+            border: 1px solid #1b4f72; 
+            padding: 15px; 
+            margin-bottom: 0; 
+            border-radius: 5px; 
+            background-color: #a7defd; 
+            box-sizing: border-box;
+        }
+        
+        legend { 
+            font-weight: bold; 
+            color: #1b4f72; 
+            padding: 0 5px; 
+            font-size: 1em;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        /* Input fields styling */
+        .field-group { margin-bottom: 15px; }
+        .field-group label {
+            display: block;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .field-group input {
+            flex: 1; 
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 12px; 
+            border: 1px solid #dcdde1; 
+            border-radius: 6px; 
+            width: 100%;
+            box-sizing: border-box; 
+            transition: all 0.3s ease;
+            background-color: #dbf3ff;
+        }
+
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 8px rgb(25, 140, 218);
+        }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* Buttons styling */
+        .btn-submit { 
+            background-color: #1b4f72; 
+            color: white; 
+            padding: 15px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-size: 16px; 
+            font-weight: bold; 
+            margin-top: 10px;
+            transition: background 0.6s, transform 0.2s;
+            box-shadow: 0 4px 10px rgba(27, 79, 114, 0.3);
+        }
+        .btn-submit:hover { 
+            background-color: #00253a; 
+            transform: translateY(-2px);
+        }    
+
+        /* Info bar for balances */
+        .info-bar { 
+            background: rgb(134, 248, 242); 
+            color: #1b4f72; 
+            font-weight: bold; 
+            padding: 10px; 
+            margin-right: 80px;
+            border-radius: 5px;  
+            border-left: 10px solid #1b4f72; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            align-items: center;
+            width: 100%;
+        }
+        .small_box_info {
+            color: #1b4f72; 
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            border: solid 1px #1b4f72;
+            padding: 2px;
+        }
+
+        /* Table container and styling */
+        .table-wrapper {
+            max-height: 363px;
+            overflow-y: auto;
+            border: 1px solid #1b4f72;
+            border-radius: 8px;
+            background-color: #dbf3ff;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 0; font-size: 0.9rem; }
+        
+        th { 
+            background-color: #1b4f72; 
+            color: white; 
+            padding: 10px;
+            text-align: center; 
+            border-bottom: 1px solid #0e2a3f;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        td { 
+            padding: 3px 12px; 
+            text-align: center; 
+            color: #1b4f72;
+            font-weight: 600;
+            border-bottom: 1px solid #8ebddb;
+        }
+
+        tr:nth-child(even) { background-color: #cceeff; }
+        tr:nth-child(odd) { background-color: #dbf3ff; }
+
+        /* Advance payment rows */
+        tr.advance-row {
+            background-color: #bbf7f4 !important;
+        }
+        tr.advance-row td {
+            border-bottom: 1px solid #5aaeb1;
+            font-weight: 800;
+        }
+
+        /* Amount value text colors */
+        .text-pos { color: #117a45; font-weight: bold; }
+        .text-neg { color: #a93226; font-weight: bold; }
+
+        /* Navigation items style */
+        .nav-item { 
+            text-decoration: none; 
+            color: #1b4f72; 
+            font-weight: bold; 
+            margin-right: 10px; 
+            margin-left: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .nav-item:hover { background-color: #a7defd; }
+        .nav-item.active { 
+            background-color: #1b4f72; 
+            color: #a7defd; 
+        }
+
+        /* Toast notification card design */
+        .toast {
+            min-width: 250px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideInLeft 1s ease-out forwards;
+        }
+
+        .toast.success { background-color: #27ae60; border-right: 8px solid #1e8449; }
+        .toast.error { background-color: #e74c3c; border-right: 8px solid #c0392b; }
+        .toast.warning { background-color: #f3ac12; border-right: 8px solid #d69b10; }
+
+        /* History card styling for sidebar list */
+        .history-item {
+            background: #a7defd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 5px solid #1b4f72;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Animation: Slide in from right */
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Animation: Fade out */
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(20px); }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <nav style="text-align: center;">
+            <div style="background: rgba(177, 226, 255, 0.746); display: inline-block; padding: 10px; border-radius: 5px;">
+                <a href="{{ url_for('main.index') }}" class="nav-item">Invoices</a>
+                <a href="#" class="nav-item active">Statement Center</a>
+            </div>
+        </nav>
+        <span class="title-text">Statement Center</span>
+        <button id="alert-history-btn" style="font-size: 1.2rem; background: #a7defd; color: #1b4f72; border: none; border-radius: 15%; width: 35px; height: 35px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 999;">
+            🔔
+        </button>
+    </header>
+
+    <div style="display: flex; gap: 20px;">
+        
+    </div>
+
+    <div class="statement-grid">
+        <div class="side-column" style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="info-bar" style="margin-top: 10px;">
+                    <div>
+                        <span>Account Name:</span> &nbsp;
+                        <span>Acount 1</span>
+                    </div>
+                </div>
+                <fieldset>
+                    <legend>📄 Official Statement</legend>
+                    <div style="text-align: center; color: #2c3e50; margin-bottom: 15px;">
+                        Create Word + PDF Statement based on the current active opening balance.
+                    </div>
+                    <form action="/generate-statement" method="POST">
+                        <button type="submit" class="btn-submit" style="background-color: #2980b9;">Generate Word + PDF</button>
+                    </form>
+                </fieldset>
+                <fieldset>
+                <legend>💵 Add Advance Payment</legend>
+                <form action="/add-advance" method="POST">
+                    <div class="field-group">
+                        <label>Date:</label>
+                        <input type="text" name="advance_date" id="dateField" placeholder="MM/DD/YYYY" required>
+                    </div>
+                    <div class="field-group">
+                        <label>Amount (USD):</label>
+                        <input type="number" onkeydown="if(event.keyCode==38 || event.keyCode==40) return false;" name="advance_amount" placeholder="0.00" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Save</button>
+                </form>
+            </fieldset>
+        </div>
+
+        <div class="main-column">
+            <fieldset style="display: flex; flex-direction: column;">
+                <legend>⚓ Invoices & Payments Since The Last Opening Balance</legend>
+
+                <form action="/update-opening" method="POST" style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="info-bar" style="margin-bottom: 10px;">
+                        <div>
+                            <span>Last Opening Balance:</span> &nbsp;
+                            <span class="small_box_info">$ {{ "{:,.2f}".format(current_bf) }}</span>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th width="8%">Select</th>
+                                    <th width="15%">Date</th>
+                                    <th width="15%">Inv_No</th>
+                                    <th>Description</th>
+                                    <th width="17%">Amount</th>
+                                    <th width="20%">Running Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in rows %}
+                                <tr class="{{ 'advance-row' if 'ADVANCE' in row.desc|upper or 'PAYMENT' in row.desc|upper else '' }}">
+                                    <td>
+                                        <input type="radio" name="selected_row" value="{{ row.row_index }}" required style="width: 20px; height: 20px; cursor: pointer;">
+                                    </td>
+                                    <td>{{ row.date }}</td>
+                                    <td>{{ row.inv_no }}</td>
+                                    <td style="text-align: left;">{{ row.desc }}</td>
+                                    <td style="text-align: right;">{{ "{:,.2f}".format(row.amount) }}</td>
+                                    <td style="text-align: right" class="{{ 'text-pos' if row.running_balance >= 0 else 'text-neg' }}">
+                                        {{ "{:,.2f}".format(row.running_balance) }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin-top: 15px;">Confirm New Opening Point</button>
+                </form>
+            </fieldset>
+        </div>
+    </div>
+    <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+
+    <div id="alert-sidebar" style="position: fixed; top: 0; right: -300px; width: 300px; height: 100%; background: #1b4f72; box-shadow: -5px 0 15px rgba(0,0,0,0.2); transition: 0.4s; z-index: 10000; padding: 20px; box-sizing: border-box; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #a7defd; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: #a7defd;">Alerts History</h3>
+            <button onclick="toggleSidebar()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #a7defd;">✖</button>
+        </div>
+        <div id="history-list">
+            <p id="empty-msg" style="text-align: center; color: #7f8c8d; font-size: 0.9em;">No notifications yet</p>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <script>
+            const flashMessages = [
+                {% for category, message in messages %}
+                    { category: "{{ category }}", message: "{{ message }}" },
+                {% endfor %}
+            ];
+        </script>
+    {% else %}
+        <script>const flashMessages = [];</script>
+    {% endif %}
+    {% endwith %}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('notification-container');
+        const historyList = document.getElementById('history-list');
+        const sidebar = document.getElementById('alert-sidebar');
+        const emptyMsg = document.getElementById('empty-msg');
+
+        // 1. Function to retrieve history stored in browser session storage
+        function getHistory() {
+            const history = sessionStorage.getItem('notifications_history');
+            return history ? JSON.parse(history) : [];
+        }
+
+        // 2. Function to save history to session storage
+        function saveHistory(history) {
+            sessionStorage.setItem('notifications_history', JSON.stringify(history));
+        }
+
+        // 3. Function to render history list in the side drawer
+        function renderHistory() {
+            const history = getHistory();
+            if (history.length > 0 && emptyMsg) emptyMsg.remove();
+            
+            historyList.innerHTML = '';
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.style.borderLeft = `5px solid ${getCategoryColor(item.category)}`;
+                historyItem.innerHTML = `
+                    <small style="display:block; color: #1b4f72;">${item.time}</small>
+                    <strong>${item.category.toUpperCase()}:</strong> ${item.message}
+                `;
+                historyList.prepend(historyItem);
+            });
+        }
+
+        // 4. Function to display floating toast notification
+        function showToast(category, message) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${category}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 1.5s ease-out forwards';
+                setTimeout(() => toast.remove(), 1500);
+            }, 4000);
+        }
+
+        function getCategoryColor(cat) {
+            if (cat === 'success') return '#27ae60';
+            if (cat === 'error') return '#e74c3c';
+            if (cat === 'warning') return '#f3ac12';
+        }
+
+        // Core execution handlers on page load
+        if (typeof flashMessages !== 'undefined' && flashMessages.length > 0) {
+            const currentHistory = getHistory();
+            
+            flashMessages.forEach(msg => {
+                showToast(msg.category, msg.message);
+                
+                currentHistory.push({
+                    category: msg.category,
+                    message: msg.message,
+                    time: new Date().toLocaleTimeString()
+                });
+            });
+            
+            saveHistory(currentHistory);
+        }
+
+        renderHistory();
+
+        window.toggleSidebar = function() {
+            const isOpen = sidebar.style.right === "0px";
+            sidebar.style.right = isOpen ? "-300px" : "0px";
+        };
+
+        document.getElementById('alert-history-btn').addEventListener('click', toggleSidebar);
+    });
+    </script>
+</body>
+</html>

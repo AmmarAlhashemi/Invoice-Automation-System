@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/png">
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #66a9cf; 
+            padding: 20px;
+        }
+
+        /* 1. General scrollbar styling (for browsers like Chrome, Edge, Safari) */
+        ::-webkit-scrollbar {
+            width: 15px; 
+            height: 12px;
+        }
+
+        /* 2. Track background */
+        ::-webkit-scrollbar-track {
+            background: #dbf3ff;
+            border-radius: 10px;
+        }
+
+        /* 3. Thumb (draggable part) */
+        ::-webkit-scrollbar-thumb {
+            background: #1b4f72;
+            border-radius: 10px;
+            border: 2px solid #dbf3ff;
+        }
+
+        /* 4. Display and style arrow buttons (up and down) */
+        ::-webkit-scrollbar-button:single-button {
+            background-color: #1b4f72;
+            display: block;
+            border-radius: 3px;
+            height: 20px;
+            background-size: 8px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Up arrow */
+        ::-webkit-scrollbar-button:single-button:vertical:decrement {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23a7defd'><polygon points='50,20 80,80 20,80'/></svg>");
+        }
+
+        /* Down arrow */
+        ::-webkit-scrollbar-button:single-button:vertical:increment {
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23a7defd'><polygon points='50,80 80,20 20,20'/></svg>");
+        }
+
+        /* Hover effect for scrollbar buttons */
+        ::-webkit-scrollbar-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #1b4f72;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+        }
+
+        .header-left, .header-right, .header-center {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-left { justify-content: flex-start; }
+        .header-center { justify-content: center; }
+        .header-right { justify-content: flex-end; }
+
+        /* Navigation Style (same as first page) */
+        .main-nav { padding-bottom: 10px; }
+        .nav-item { 
+            text-decoration: none; 
+            color: #1b4f72; 
+            font-weight: bold; 
+            margin-right: 10px; 
+            margin-left: 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .nav-item:hover { background-color: #a7defd; }
+        .nav-item.active { 
+            background-color: #1b4f72; 
+            color: #a7defd; 
+        }
+
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            margin-top: 65px;
+            background: #a7defd; 
+            padding: 40px; 
+            padding-top: 20px;
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.445); 
+            border-top: 12px solid #1b4f72;
+        }   
+
+        .main-title-box {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-color: #1b4f72;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header-logo {
+            height: 60px;
+            width: auto;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .title-text {
+            color: #a7defd;
+            font-size: 1.6rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+
+        /* Responsive layout handling */
+        @media (max-width: 768px) {
+            .main-title-box {
+                gap: 3px;
+            }
+            .header-logo {
+                height: 10px;
+            }
+            .title-text {
+                font-size: 1.1rem;
+            }
+        } 
+
+        /* Outer container styling to match other fields */
+        .priority-section {
+            border: 2px solid #1b4f72;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #a7defd;
+            text-align: center;
+        }
+
+        .center-legend {
+            margin: 0 auto;
+            padding: 0 10px;
+            font-weight: bold;
+            color: #1b4f72;
+            font-size: 1em;
+        }
+
+        /* Flexible wrapper for buttons */
+        .category-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        /* Hide default radio circle */
+        .radio-card input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        /* Card design (default state) */
+        .radio-card {
+            cursor: pointer;
+            flex: 1;
+            min-width: 140px;
+            max-width: 200px;
+        }
+
+        .card-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 15px;
+            
+            background-color: #e0e0e0;
+            border-right: 5px solid #909a9b;
+            border-left: 5px solid #909a9b;
+            color: #7f8c8d;
+            font-weight: bold;
+            
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Active state (when selected) */
+        .radio-card input:checked + .card-content {
+            background-color: rgb(134, 248, 242);
+            border-right: 10px solid #1b4f72;
+            border-left: 10px solid #1b4f72;
+            color: #1b4f72;
+        }
+
+        /* Cursor hover effects */
+        .radio-card:hover .card-content {
+            background-color: #f0f2f5;
+        }
+        
+        /* Exclude active selected state from hover styling */
+        .radio-card input:checked:hover + .card-content {
+            background-color: rgb(134, 248, 242);
+        }
+        
+        .info-bar { background: rgb(134, 248, 242); color: #1b4f72; font-weight: bold; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 10px solid #1b4f72; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .xlinfo-bar { 
+            height: 3.5rem;
+            flex: 3; 
+            display: flex; 
+            align-items: center; 
+            background-color: #a0f5c3;
+            padding: 0 15px; 
+            border-radius: 8px; 
+            border-left: 10px solid #1da054;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Styling when checkbox is inactive (fades to neutral gray) */
+        .xlinfo-bar:has(input[type="checkbox"]:not(:checked)) {
+            background-color: #e0e0e0; 
+            border-left: 5px solid #95a5a6; 
+            opacity: 0.8;
+        }
+
+        /* Change label color when disabled to match gray theme */
+        .xlinfo-bar:has(input[type="checkbox"]:not(:checked)) label {
+            color: #7f8c8d !important;
+        }       
+        .last-inv { color: #326d94; font-weight: bold; text-decoration: underline; }
+
+        fieldset { border: 1px solid #1b4f72; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        legend { font-weight: bold; color: #34495e; padding: 0 5px; }
+        
+        /* Field grouping to align labels alongside input fields */
+        .field-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .field-group label {
+            flex: 0 0 140px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 0;
+        }
+        .field-group input {
+            flex: 1;
+        }
+
+        .row { align-items: center; display: flex; gap: 20px; flex-wrap: wrap; }
+        .col { flex: 1; min-width: 250px; }
+        
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #dcdde1; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            transition: all 0.3s ease;
+            background-color: #dbf3ff;
+            resize: none;
+        }
+
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 8px rgb(25, 140, 218);
+        }
+        textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 8px rgb(25, 140, 218);
+        }
+                
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; overflow: hidden; border-radius: 8px; }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid #1b4f72; }
+        th { 
+            background-color: #1b4f72; 
+            color: white; 
+            font-size: 0.85em; 
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        tr:nth-child(even) { background-color: #a7defd; }
+        
+        .btn-submit { 
+            background-color: #1b4f72; 
+            color: white; 
+            padding: 18px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin-top: 10px;
+            transition: background 0.6s;
+            box-shadow: 0 4px 15px rgba(27, 79, 114, 0.3);
+        }
+        .btn-submit:hover { background-color: #00253a; }       
+        
+        .btn-today { background-color: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 0.8em; }
+
+        /* Toast notification popup styling */
+        .toast {
+            min-width: 250px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideInLeft 1s ease-out forwards;
+        }
+
+        .toast.success { background-color: #27ae60; border-right: 8px solid #1e8449; }
+        .toast.error { background-color: #e74c3c; border-right: 8px solid #c0392b; }
+        .toast.warning { background-color: #f3ac12; border-right: 8px solid #d69b10; }
+
+        /* History card styling for sidebar */
+        .history-item {
+            background: #a7defd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 5px solid #1b4f72;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Animation: Slide in from right */
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Animation: Fade out */
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(20px); }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <nav style="text-align: center;">
+            <div style="background: rgba(177, 226, 255, 0.746); display: inline-block; padding: 10px; border-radius: 5px;">
+                <a href="#" class="nav-item active">Invoices</a>
+                <a href="{{ url_for('statement.statement_page') }}" class="nav-item">Statement Center</a>
+            </div>
+        </nav>
+        <span class="title-text">Invoice System</span>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" class="header-logo" alt="Logo">
+        <button id="alert-history-btn" style="font-size: 1.2rem; background: #a7defd; color: #1b4f72; border: none; border-radius: 15%; width: 35px; height: 35px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 999;">
+            🔔
+        </button>
+    </header>
+    <div class="container">
+
+        <form action="/generate" method="POST">  
+            <input type="hidden" name="inv_type_select" id="hidden_inv_type" value="normal">
+            <fieldset class="priority-section">
+                <legend class="center-legend">Select Invoice Type</legend>
+                
+                <div class="category-wrapper">
+                    <label class="radio-card">
+                        <input type="radio" name="temp_select" value="normal" checked onclick="toggleInvoiceType('normal')">
+                        <span class="card-content">
+                            General (Normal)
+                        </span>
+                    </label>
+            
+                    <label class="radio-card">
+                        <input type="radio" name="temp_select" value="coc" onclick="toggleInvoiceType('coc')">
+                        <span class="card-content">
+                            COC (Consultation)
+                        </span>
+                    </label>
+                </div>
+            </fieldset>
+              
+            <div class="info-bar">
+                Last invoice: &nbsp;<span class="last-inv">{{ last_inv_file }}</span>
+            </div>
+
+            <fieldset>
+                <div class="row">
+                    <div class="col">
+                        <div class="field-group">
+                            <label>Invoice No.</label>
+                            <div style="max-width: 200px;">
+                                <input onwheel="return false;" 
+                                    onkeydown="if(event.keyCode==38 || event.keyCode==40) return false;" 
+                                    type="number" name="inv_no" value="{{ next_inv }}" required
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="field-group">
+                            <div style="max-width: 200px"><label>Date:</label></div>
+                            <input type="text" name="date" id="dateField" placeholder="MM/DD/YYYY" required>
+                            <button type="button" class="btn-today" onclick="setToday()">Today's Date</button>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+    
+            <fieldset>
+                <div class="field-group">
+                    <label>Messers:</label>
+                    <input list="clients" name="client_name" required>
+                </div>
+            </fieldset>
+    
+            <fieldset>
+                <div class="row">
+                    <div class="col">
+                        <div class="field-group">
+                            <label>Airway Bill (awb):</label>
+                            <input type="text" name="awb">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="field-group">
+                            <label>Bill of Lading (bol):</label>
+                            <input type="text" name="bol">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="field-group">
+                            <label>Net Weight:</label>
+                            <input type="text" name="net_w">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="field-group">
+                            <label>Gross Weight:</label>
+                            <input type="text" name="gross_w">
+                        </div>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Nature of Goods:</label>
+                    <input type="text" name="nature">
+                </div>
+            </fieldset>
+    
+            <fieldset>
+                <table>
+                    <thead>
+                        <tr><th width="5%">#</th><th>Description</th><th width="20%">US Dollars</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for i in range(1, 11) %}
+                        <tr>
+                            <td>{{ i }}</td>
+                            <td><input type="text" name="d{{ i }}"></td>
+                            <td>
+                                <input onwheel="return false;" 
+                                    onkeydown="if(event.keyCode==38 || event.keyCode==40) return false;" 
+                                    type="number" step="0.01" name="p{{ i }}" class="price-input"
+                                >
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div style="margin-top: 15px; padding-top: 15px;">
+                    <div class="row">
+                        <div style="display:flex; width: 80%; gap: 15px;"><label style="font-weight: bold;">Others:</label>
+                            <textarea name="others_desc" rows="2" style="width: 100%"></textarea>
+                        </div>
+                        <div style="width: 16%">
+                            <input type="number" step="0.01" name="others_price" class="price-input">
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+    
+            <div style="display: flex; gap: 15px; align-items: stretch; margin-bottom: 10px;">
+                <div class="xlinfo-bar">
+                    <input type="checkbox" name="update_excel" id="update_excel" checked style="width: 1.2rem; height: 1.2rem; margin-right: 10px;">
+                    <label for="update_excel" style="margin-bottom: 0; cursor: pointer; font-weight: bold; color: #1b4f72;">Add this invoice to the Excel statement</label>
+                </div>
+    
+                <div style="display: flex; align-items: center; flex: 1; background: rgba(253, 242, 225, 0.56); border: 2px dashed #1b4f72; padding: 0 15px; border-radius: 10px; height: 3rem;">
+                    <div style="flex: 1; font-weight: bold; color: #2c3e50;">Total:</div>
+                    <div id="liveTotalDisplay" style="font-size: 1.2em; font-weight: bold; color: #1b4f72;">$ 0.00</div>
+                </div>
+            </div>
+    
+            <button type="submit" class="btn-submit">Save (Word + PDF)</button>
+        </form>
+    </div>
+
+    <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+
+    <div id="alert-sidebar" style="position: fixed; top: 0; right: -300px; width: 300px; height: 100%; background: #1b4f72; box-shadow: -5px 0 15px rgba(0,0,0,0.2); transition: 0.4s; z-index: 10000; padding: 20px; box-sizing: border-box; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #a7defd; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: #a7defd;">Alerts History</h3>
+            <button onclick="toggleSidebar()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #a7defd;">✖</button>
+        </div>
+        <div id="history-list">
+            <p id="empty-msg" style="text-align: center; color: #7f8c8d; font-size: 0.9em;">No notifications yet</p>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <script>
+            const flashMessages = [
+                {% for category, message in messages %}
+                    { category: "{{ category }}", message: "{{ message }}" },
+                {% endfor %}
+            ];
+        </script>
+    {% else %}
+        <script>const flashMessages = [];</script>
+    {% endif %}
+    {% endwith %}
+
+<script>
+    // Receive next numbers from server
+    let nextNormal = "{{ next_inv_normal }}";
+    let nextCoc    = "{{ next_inv_coc }}";
+
+    function toggleInvoiceType(type) {
+        // 1. Update hidden field to ensure value reaches Flask successfully
+        const hiddenInput = document.getElementById('hidden_inv_type');
+        if (hiddenInput) hiddenInput.value = type;
+
+        // 2. Define elements and variables
+        const invInput = document.getElementsByName('inv_no')[0];
+        const lastInvSpan = document.querySelector('.last-inv');
+        const year = new Date().getFullYear();
+        
+        // Fetch values coming from Python (ensure server sends them with these names)
+        const nextNormal = "{{ next_inv_normal }}";
+        const nextCoc = "{{ next_inv_coc }}";
+
+        if (type === 'coc') {
+            // Update next number for COC formatted as 000/2026
+            let formattedNo = nextCoc.toString().padStart(3, '0');
+            invInput.type = "text";
+            invInput.value = `COC ${formattedNo}/${year}`;
+            lastInvSpan.innerText = "{{ last_inv_coc }}";
+            
+            // Populate fixed default data for COC
+            document.getElementsByName('client_name')[0].value = "";
+            document.getElementsByName('d1')[0].value = `Consultation charges as agreed for ___ ${year}`;
+            document.getElementsByName('p1')[0].value = "5000";
+        } else {
+            // Update next number for normal invoice
+            invInput.type = "number";
+            invInput.value = nextNormal;
+            lastInvSpan.innerText = "{{ last_inv_normal }}";
+            
+            // Clear data for normal mode
+            document.getElementsByName('client_name')[0].value = "";
+            document.getElementsByName('d1')[0].value = "";
+            document.getElementsByName('p1')[0].value = "";
+        }
+    }
+
+    function setToday() {
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
+        document.getElementById('dateField').value = mm + '/' + dd + '/' + yyyy;
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        
+        // 1. Calculate table amounts (10 rows)
+        for (let i = 1; i <= 10; i++) {
+            let val = document.getElementsByName('p' + i)[0].value;
+            if (val) total += parseFloat(val);
+        }
+        
+        // 2. Calculate "Others" amount
+        let otherVal = document.getElementsByName('others_price')[0].value;
+        if (otherVal) total += parseFloat(otherVal);
+        
+        // 3. Display final sum in financial format
+        document.getElementById('liveTotalDisplay').innerText = "$ " + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    // Automatic update when typing in any price field
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', calculateTotal);
+    });
+
+    window.addEventListener('DOMContentLoaded', (event) => {
+        // Check selected radio button (temp_select) and trigger toggle function accordingly
+        const checkedRadio = document.querySelector('input[name="temp_select"]:checked');
+        if (checkedRadio) {
+            toggleInvoiceType(checkedRadio.value);
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('notification-container');
+        const historyList = document.getElementById('history-list');
+        const sidebar = document.getElementById('alert-sidebar');
+        const emptyMsg = document.getElementById('empty-msg');
+
+        // 1. Function to retrieve history stored in session storage
+        function getHistory() {
+            const history = sessionStorage.getItem('notifications_history');
+            return history ? JSON.parse(history) : [];
+        }
+
+        // 2. Function to save history in session storage
+        function saveHistory(history) {
+            sessionStorage.setItem('notifications_history', JSON.stringify(history));
+        }
+
+        // 3. Function to render history list in the sidebar
+        function renderHistory() {
+            const history = getHistory();
+            if (history.length > 0 && emptyMsg) emptyMsg.remove();
+            
+            historyList.innerHTML = ''; // Clear current list to rebuild
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.style.borderLeft = `5px solid ${getCategoryColor(item.category)}`;
+                historyItem.innerHTML = `
+                    <small style="display:block; color: #1b4f72;">${item.time}</small>
+                    <strong>${item.category.toUpperCase()}:</strong> ${item.message}
+                `;
+                historyList.prepend(historyItem); // Latest items stay at the top
+            });
+        }
+
+        // 4. Function to display floating Toast notification
+        function showToast(category, message) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${category}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 1.5s ease-out forwards';
+                setTimeout(() => toast.remove(), 1500);
+            }, 4000);
+        }
+
+        function getCategoryColor(cat) {
+            if (cat === 'success') return '#27ae60';
+            if (cat === 'error') return '#e74c3c';
+            if (cat === 'warning') return '#f3ac12';
+        }
+
+        // --- Core initializations on page load ---
+
+        // A- Retrieve new messages from Flask (if any exist)
+        if (typeof flashMessages !== 'undefined' && flashMessages.length > 0) {
+            const currentHistory = getHistory();
+            
+            flashMessages.forEach(msg => {
+                // Show floating alert toast for new messages only
+                showToast(msg.category, msg.message);
+                
+                // Append new message to history log with current timestamp
+                currentHistory.push({
+                    category: msg.category,
+                    message: msg.message,
+                    time: new Date().toLocaleTimeString()
+                });
+            });
+            
+            // Save updated history
+            saveHistory(currentHistory);
+        }
+
+        // B- Render stored history (regardless of whether new messages arrived)
+        renderHistory();
+
+        // C- Sidebar toggle control
+        window.toggleSidebar = function() {
+            const isOpen = sidebar.style.right === "0px";
+            sidebar.style.right = isOpen ? "-300px" : "0px";
+        };
+
+        document.getElementById('alert-history-btn').addEventListener('click', toggleSidebar);
+    });
+</script>
+</body>
+</html>

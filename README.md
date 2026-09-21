@@ -1,6 +1,16 @@
 # 📄 Smart Invoice Automation & Reporting System
 
+![Platform: Windows](https://img.shields.io/badge/Platform-Windows-blue?logo=windows&logoColor=white)
+![Python Version](https://img.shields.io/badge/Python-3.12-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 A lightweight, modular, and developer-friendly web system built with **Python & Flask** to automate invoice generation, report calculations, and Excel-based financial sheet synchronization. Designed using **Clean Architecture** principles to enforce a strict separation of concerns between web routes, business logic, and data persistence.
+
+---
+
+## ⚠️ Compatibility Notice
+
+> **Platform Requirement:** This application utilizes **`xlwings`** for advanced Excel automation. As a result, **it is exclusively compatible with Windows and requires a local installation of Microsoft Excel**.
 
 ---
 
@@ -16,7 +26,7 @@ This system was custom-built to solve a specific client's workflow requirements:
 ## 🌟 Key Features
 
 * **Invoice Generation**: Automates client invoice creation and exports formatted output (PDF/Word).
-* **Excel Data Engine**: Interacts directly with Excel spreadsheets (`.xlsx`) for dynamic data reading, updating, and record persistence without overhead.
+* **Excel Data Engine**: Interacts directly with Excel spreadsheets and desktop instances using `xlwings` for dynamic data reading, updating, and record persistence.
 * **Modular Architecture**: Built with Flask Blueprints and dedicated layers for business logic and data access.
 
 ---
@@ -27,15 +37,17 @@ The project follows a **Clean Architecture (Separation of Concerns)** pattern to
 
 ### Architectural Breakdown:
 * **Presentation Layer (`routes/`)**: Handles HTTP requests, extracts parameters, and delegates work to services.
+* **View & UI Layer (`pages/`)**: Manages the HTML templates and user interface components responsible for client-side rendering and interaction.
 * **Business Logic Layer (`services/`)**: Contains pure business rules (e.g., total calculations, date formatting, document rendering).
-* **Data Access Layer (`data/`)**: Isolates all Direct File/Excel operations using Python libraries (`openpyxl` / `pandas`), keeping storage mechanics completely decoupled from web logic.
+* **Data Access Layer (`statements/`)**: Isolates all Direct File/Excel operations using Python libraries (`xlwings`, `openpyxl`, `pandas`), keeping storage mechanics completely decoupled from web logic.
 
 ---
 
 ## 🛠️ Tech Stack
 
 * **Backend**: Python 3.12.10, Flask (Micro-framework, Blueprints)
-* **Data & Automation**: Excel Integration (`openpyxl`), Document Processing (`ReportLab` / `python-docx`)
+* **Excel Automation**: `xlwings`, `openpyxl`
+* **Document Processing**: `docx2pdf` / `python-docx`
 * **Frontend**: HTML5, CSS3, JavaScript (Fetch API / DOM Manipulation)
 * **Version Control**: Git & GitHub
 
@@ -43,8 +55,10 @@ The project follows a **Clean Architecture (Separation of Concerns)** pattern to
 
 ## 🚀 Quick Start Guide
 
-### Prerequisites
-* Python 3.12.10 or higher installed on your machine.
+### System Requirements
+* **Operating System:** Windows 10 or Windows 11 (Required for `xlwings` desktop integration)
+* **Software:** Microsoft Excel (Desktop application installed locally)
+* **Python:** Python 3.12.10 or higher installed on your machine.
 
 ### Installation
 
@@ -56,13 +70,8 @@ The project follows a **Clean Architecture (Separation of Concerns)** pattern to
 
 2. Create and activate a virtual environment:
    ```bash
-   # Windows
    python -m venv venv
    venv\Scripts\activate
-
-   # macOS/Linux
-   python3 -m venv venv
-   source venv/bin/activate
    ```
 
 3. Install dependencies:
